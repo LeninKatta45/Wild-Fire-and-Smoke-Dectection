@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire and Smoke Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://images.pexels.com/photos/691668/pexels-photo-691668.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #start-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #stop-button {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fire and Smoke Detection</h1>
+    <button id="start-button" onclick="startStream()">Start Stream</button>
+    <button id="stop-button" onclick="stopStream()" style="display: none;">Stop Stream</button>
+    <div id="video-container" style="display: none;">
+        <img id="live-video" src="" alt="Live Video Stream" width="640" height="480">
+    </div>
+
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        function startStream() {
+            // Show the video container once the stream starts
+            document.getElementById('video-container').style.display = 'block';
+            // Show the stop button and hide the start button
+            document.getElementById('stop-button').style.display = 'inline-block';
+            document.getElementById('start-button').style.display = 'none';
+
+            // Listen for the 'image' event emitted by the server
+            socket.on('image', function(imageData) {
+                // Update the src attribute of the img tag with the received base64 encoded image data
+                document.getElementById('live-video').src = 'data:image/jpeg;base64,' + imageData;
+            });
+
+            // Trigger the 'image_request' event to start the stream
+            socket.emit('image_request');
+        }
+
+        function stopStream() {
+            // Trigger the 'stop_stream' event to stop the server-side process
+            socket.emit('stop_stream');
+            // Disconnect from the server
+            socket.disconnect();
+            // Hide the video container and the stop button, and show the start button again
+            document.getElementById('video-container').style.display = 'none';
+            document.getElementById('stop-button').style.display = 'none';
+            document.getElementById('start-button').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>
